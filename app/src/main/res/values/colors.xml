@@ -3,4 +3,10 @@
     <color name="colorPrimary">#008577</color>
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
+    <color name="dcard_300">#66b1db</color>
+    <color name="dcard_400">#3397cf</color>
+    <color name="grey_200">#eeeeee</color>
+    <color name="grey_300">#e0e0e0</color>
+    <color name="ripple_dark">#1f000000</color>
+    <color name="ripple_light">#33ffffff</color>
 </resources>
