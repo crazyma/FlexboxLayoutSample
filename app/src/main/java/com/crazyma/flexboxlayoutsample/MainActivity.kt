@@ -3,6 +3,7 @@ package com.crazyma.flexboxlayoutsample
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -30,5 +31,9 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    fun buttonClicked(v: View){
+
     }
 }
