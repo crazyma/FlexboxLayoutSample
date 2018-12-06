@@ -13,6 +13,8 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
+    lateinit var adapter: FlexboxAdapter
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -20,7 +22,7 @@ class MainActivity : AppCompatActivity() {
         setupRecyclerView()
     }
 
-    private fun setupRecyclerView(){
+    private fun setupRecyclerView() {
 
         val list = mutableListOf<String>().apply {
             for (i in 0..30) {
@@ -30,7 +32,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        val adapter = FlexboxAdapter(this).apply {
+        adapter = FlexboxAdapter(this).apply {
             this.list = list
         }
 
@@ -63,7 +65,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun buttonClicked(v: View){
+    fun buttonClicked(v: View) {
+        when (v.id) {
 
+            R.id.addButton -> {
+
+                adapter.insertItem((Math.random() * 10).toInt(), listOf("AAA","BBBBBB","CCCCCCCCC"))
+            }
+
+            R.id.deleteButton -> {
+
+            }
+        }
     }
 }

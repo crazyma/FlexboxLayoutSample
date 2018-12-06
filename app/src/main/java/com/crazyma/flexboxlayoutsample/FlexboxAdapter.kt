@@ -11,7 +11,7 @@ class FlexboxAdapter(
     private val context: Context
 ) : RecyclerView.Adapter<FlexboxAdapter.ViewHolder>() {
 
-    var list = listOf<String>()
+    var list = mutableListOf<String>()
         set(value) {
             field = value
             notifyDataSetChanged()
@@ -19,6 +19,16 @@ class FlexboxAdapter(
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var textView: TextView = itemView as TextView
+    }
+
+    fun insertItem(index: Int, text: String) {
+        list.add(index, text)
+        notifyItemInserted(index)
+    }
+
+    fun insertItem(index: Int, texts: List<String>){
+        list.addAll(index ,texts)
+        notifyItemRangeInserted(index, texts.size)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
