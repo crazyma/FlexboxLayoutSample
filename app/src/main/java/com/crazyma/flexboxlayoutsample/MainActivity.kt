@@ -5,6 +5,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.TextView
+import com.google.android.flexbox.FlexDirection
+import com.google.android.flexbox.FlexWrap
+import com.google.android.flexbox.FlexboxLayoutManager
+import com.google.android.flexbox.JustifyContent
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -13,7 +17,33 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        insertItem()
+        setupRecyclerView()
+    }
+
+    private fun setupRecyclerView(){
+
+        val list = mutableListOf<String>().apply {
+            for (i in 0..30) {
+                (Math.random() * 10000).toInt().toString().run {
+                    this@apply.add(this)
+                }
+            }
+        }
+
+        val adapter = FlexboxAdapter(this).apply {
+            this.list = list
+        }
+
+        val manager = FlexboxLayoutManager(this).apply {
+            flexDirection = FlexDirection.ROW
+            flexWrap = FlexWrap.WRAP
+            justifyContent = JustifyContent.CENTER
+        }
+
+        recyclerView.adapter = adapter
+        recyclerView.layoutManager = manager
+
+
     }
 
     private fun insertItem() {
