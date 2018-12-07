@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity() {
             justifyContent = JustifyContent.CENTER
         }
 
-        recyclerView.itemAnimator = SlideInDownAnimator()
+        recyclerView.itemAnimator = FlexboxItemAnimator()
         recyclerView.layoutManager = manager
         recyclerView.adapter = adapter
 
