@@ -19,6 +19,7 @@ class FlexboxAdapter(
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var textView: TextView = itemView as TextView
+        var fadeInIndex = 0
     }
 
     fun insertItem(index: Int, text: String) {

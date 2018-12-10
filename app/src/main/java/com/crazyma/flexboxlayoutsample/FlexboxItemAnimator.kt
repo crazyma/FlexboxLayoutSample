@@ -6,7 +6,6 @@ import android.support.v4.view.ViewCompat
 import android.support.v4.view.ViewPropertyAnimatorListener
 import android.view.View
 
-
 //  Reference: https://android.googlesource.com/platform/frameworks/support/+/c110be5/v7/recyclerview/src/android/support/v7/widget/DefaultItemAnimator.java
 class FlexboxItemAnimator : SimpleItemAnimator() {
 
@@ -85,12 +84,13 @@ class FlexboxItemAnimator : SimpleItemAnimator() {
         if (additionsPending) {
             val additions = ArrayList<RecyclerView.ViewHolder>()
             additions.addAll(pendingAdditions)
+            additions.sortBy { it.adapterPosition }
             additionsList.add(additions)
             pendingAdditions.clear()
             val adder = Runnable {
-                for (holder in additions) {
+                for ((index, holder) in additions.withIndex()) {
                     //  TODO: animate add implement
-                    animateAddImpl(holder)
+                    animateAddImpl(holder, index)
                 }
                 additions.clear()
                 additionsList.remove(additions)
@@ -399,8 +399,9 @@ class FlexboxItemAnimator : SimpleItemAnimator() {
         return true
     }
 
-    private fun animateAddImpl(holder: RecyclerView.ViewHolder) {
+    private fun animateAddImpl(holder: RecyclerView.ViewHolder, fadeInIndex: Int) {
         val view = holder.itemView
+        val delay = fadeInIndex * 80L
         addAnimations.add(holder)
         val animation = ViewCompat.animate(view)
         animation.alpha(1f).setDuration(addDuration).setListener(object : VpaListenerAdapter() {
@@ -409,16 +410,21 @@ class FlexboxItemAnimator : SimpleItemAnimator() {
             }
 
             override fun onAnimationCancel(view: View) {
+                ViewCompat.animate(view).startDelay = 0
                 view.alpha = 1f
             }
 
             override fun onAnimationEnd(view: View) {
+                ViewCompat.animate(view).startDelay = 0
                 animation.setListener(null)
                 dispatchAddFinished(holder)
                 addAnimations.remove(holder)
                 dispatchFinishedWhenDone()
             }
-        }).start()
+        })
+            .setStartDelay(delay)
+            .start()
+
     }
 
     private fun animateRemoveImpl(holder: RecyclerView.ViewHolder) {
