@@ -32,6 +32,11 @@ class FlexboxAdapter(
         notifyItemRangeInserted(index, texts.size)
     }
 
+    fun removeItem(index: Int){
+        list.removeAt(index)
+        notifyItemRemoved(index)
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(context)
             .inflate(R.layout.view_flex_item, parent, false)!!

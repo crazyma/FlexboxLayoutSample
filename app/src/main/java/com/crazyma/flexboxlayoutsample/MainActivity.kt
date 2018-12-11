@@ -70,12 +70,11 @@ class MainActivity : AppCompatActivity() {
         when (v.id) {
 
             R.id.addButton -> {
-
-                adapter.insertItem((Math.random() * 10).toInt(), listOf("AAA","BBBBBB","CCCCCCCCC"))
+                adapter.insertItem((Math.random() * adapter.itemCount).toInt(), listOf("AAA","BBBBBB","CCCCCCCCC"))
             }
 
             R.id.deleteButton -> {
-
+                adapter.removeItem((Math.random() * adapter.itemCount).toInt())
             }
         }
     }

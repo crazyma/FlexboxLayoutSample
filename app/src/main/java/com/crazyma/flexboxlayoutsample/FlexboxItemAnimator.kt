@@ -5,6 +5,7 @@ import android.support.v7.widget.SimpleItemAnimator
 import android.support.v4.view.ViewCompat
 import android.support.v4.view.ViewPropertyAnimatorListener
 import android.view.View
+import android.view.animation.OvershootInterpolator
 
 //  Reference: https://android.googlesource.com/platform/frameworks/support/+/c110be5/v7/recyclerview/src/android/support/v7/widget/DefaultItemAnimator.java
 class FlexboxItemAnimator : SimpleItemAnimator() {
@@ -111,6 +112,8 @@ class FlexboxItemAnimator : SimpleItemAnimator() {
     override fun animateAdd(holder: RecyclerView.ViewHolder): Boolean {
         this.resetAnimation(holder)
         holder.itemView.alpha = 0.0f
+        holder.itemView.scaleX = 0.5f
+        holder.itemView.scaleY = 0.5f
         pendingAdditions.add(holder)
         return true
     }
@@ -404,18 +407,26 @@ class FlexboxItemAnimator : SimpleItemAnimator() {
         val delay = fadeInIndex * 80L
         addAnimations.add(holder)
         val animation = ViewCompat.animate(view)
-        animation.alpha(1f).setDuration(addDuration).setListener(object : VpaListenerAdapter() {
+        animation.alpha(1f).scaleX(1f).scaleY(1f).setInterpolator(OvershootInterpolator())
+            .setDuration(addDuration).setListener(object : VpaListenerAdapter() {
             override fun onAnimationStart(view: View) {
                 dispatchAddStarting(holder)
             }
 
             override fun onAnimationCancel(view: View) {
-                ViewCompat.animate(view).startDelay = 0
+                ViewCompat.animate(view).apply {
+                    startDelay = 0
+                    interpolator = null
+                }
+
                 view.alpha = 1f
             }
 
             override fun onAnimationEnd(view: View) {
-                ViewCompat.animate(view).startDelay = 0
+                ViewCompat.animate(view).apply {
+                    startDelay = 0
+                    interpolator = null
+                }
                 animation.setListener(null)
                 dispatchAddFinished(holder)
                 addAnimations.remove(holder)
