@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity() {
             justifyContent = JustifyContent.CENTER
         }
 
-        recyclerView.itemAnimator = FlexboxItemAnimator()
+        recyclerView.itemAnimator = DcardFlexboxItemAnimator()
         recyclerView.layoutManager = manager
         recyclerView.adapter = adapter
 

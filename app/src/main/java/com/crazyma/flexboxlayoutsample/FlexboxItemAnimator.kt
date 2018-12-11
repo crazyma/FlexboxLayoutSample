@@ -8,19 +8,27 @@ import android.view.View
 import android.view.animation.OvershootInterpolator
 
 //  Reference: https://android.googlesource.com/platform/frameworks/support/+/c110be5/v7/recyclerview/src/android/support/v7/widget/DefaultItemAnimator.java
-class FlexboxItemAnimator : SimpleItemAnimator() {
+abstract class FlexboxItemAnimator : SimpleItemAnimator() {
 
     private val pendingRemovals = ArrayList<RecyclerView.ViewHolder>()
     private val pendingAdditions = ArrayList<RecyclerView.ViewHolder>()
     private val pendingMoves = ArrayList<MoveInfo>()
     private val pendingChanges = ArrayList<ChangeInfo>()
-    private var addAnimations: ArrayList<RecyclerView.ViewHolder> = ArrayList()
-    private var moveAnimations: ArrayList<RecyclerView.ViewHolder> = ArrayList()
-    private var removeAnimations: ArrayList<RecyclerView.ViewHolder> = ArrayList()
-    private var changeAnimations: ArrayList<RecyclerView.ViewHolder> = ArrayList()
+    protected var addAnimations: ArrayList<RecyclerView.ViewHolder> = ArrayList()
+    protected var moveAnimations: ArrayList<RecyclerView.ViewHolder> = ArrayList()
+    protected var removeAnimations: ArrayList<RecyclerView.ViewHolder> = ArrayList()
+    protected var changeAnimations: ArrayList<RecyclerView.ViewHolder> = ArrayList()
     private var additionsList: ArrayList<ArrayList<RecyclerView.ViewHolder>> = ArrayList()
     private var movesList: ArrayList<ArrayList<MoveInfo>> = ArrayList()
     private var changesList: ArrayList<ArrayList<ChangeInfo>> = ArrayList()
+
+    abstract fun animateAddImpl(holder: RecyclerView.ViewHolder, fadeInIndex: Int)
+
+    abstract fun animateRemoveImpl(holder: RecyclerView.ViewHolder)
+
+    abstract fun animateMoveImpl(holder: RecyclerView.ViewHolder, fromX: Int, fromY: Int, toX: Int, toY: Int)
+
+    abstract fun animateChangeImpl(changeInfo: ChangeInfo)
 
     override fun runPendingAnimations() {
         val removalsPending = !pendingRemovals.isEmpty()
@@ -348,7 +356,7 @@ class FlexboxItemAnimator : SimpleItemAnimator() {
         }
     }
 
-    private fun dispatchFinishedWhenDone() {
+    protected fun dispatchFinishedWhenDone() {
         if (!this.isRunning) {
             this.dispatchAnimationsFinished()
         }
@@ -402,148 +410,6 @@ class FlexboxItemAnimator : SimpleItemAnimator() {
         return true
     }
 
-    private fun animateAddImpl(holder: RecyclerView.ViewHolder, fadeInIndex: Int) {
-        val view = holder.itemView
-        val delay = fadeInIndex * 80L
-        addAnimations.add(holder)
-        val animation = ViewCompat.animate(view)
-        animation.alpha(1f).scaleX(1f).scaleY(1f).setInterpolator(OvershootInterpolator())
-            .setDuration(addDuration).setListener(object : VpaListenerAdapter() {
-            override fun onAnimationStart(view: View) {
-                dispatchAddStarting(holder)
-            }
-
-            override fun onAnimationCancel(view: View) {
-                ViewCompat.animate(view).apply {
-                    startDelay = 0
-                    interpolator = null
-                }
-
-                view.alpha = 1f
-            }
-
-            override fun onAnimationEnd(view: View) {
-                ViewCompat.animate(view).apply {
-                    startDelay = 0
-                    interpolator = null
-                }
-                animation.setListener(null)
-                dispatchAddFinished(holder)
-                addAnimations.remove(holder)
-                dispatchFinishedWhenDone()
-            }
-        })
-            .setStartDelay(delay)
-            .start()
-
-    }
-
-    private fun animateRemoveImpl(holder: RecyclerView.ViewHolder) {
-        val view = holder.itemView
-        val animation = ViewCompat.animate(view)
-        animation.setDuration(removeDuration)
-            .alpha(0f).setListener(object : VpaListenerAdapter() {
-                override fun onAnimationStart(view: View) {
-                    dispatchRemoveStarting(holder)
-                }
-
-                override fun onAnimationEnd(view: View) {
-                    animation.setListener(null)
-                    view.alpha = 1f
-                    dispatchRemoveFinished(holder)
-                    removeAnimations.remove(holder)
-                    dispatchFinishedWhenDone()
-                }
-            }).start()
-        removeAnimations.add(holder)
-    }
-
-    private fun animateMoveImpl(holder: RecyclerView.ViewHolder, fromX: Int, fromY: Int, toX: Int, toY: Int) {
-        val view = holder.itemView
-        val deltaX = toX - fromX
-        val deltaY = toY - fromY
-        if (deltaX != 0) {
-            ViewCompat.animate(view).translationX(0f)
-        }
-        if (deltaY != 0) {
-            ViewCompat.animate(view).translationY(0f)
-        }
-
-        moveAnimations.add(holder)
-        val animation = ViewCompat.animate(view)
-        animation.setDuration(moveDuration).setListener(object : VpaListenerAdapter() {
-            override fun onAnimationStart(view: View) {
-                dispatchMoveStarting(holder)
-            }
-
-            override fun onAnimationCancel(view: View) {
-                if (deltaX != 0) {
-                    view.translationX = 0f
-                }
-                if (deltaY != 0) {
-                    view.translationY = 0f
-                }
-            }
-
-            override fun onAnimationEnd(view: View) {
-                animation.setListener(null)
-                dispatchMoveFinished(holder)
-                moveAnimations.remove(holder)
-                dispatchFinishedWhenDone()
-            }
-        }).start()
-    }
-
-    private fun animateChangeImpl(changeInfo: ChangeInfo) {
-        val holder = changeInfo.oldHolder
-        val view = holder?.itemView
-        val newHolder = changeInfo.newHolder
-        val newView = newHolder?.itemView
-        if (view != null) {
-            changeAnimations.add(changeInfo.oldHolder!!)
-            val oldViewAnim = ViewCompat.animate(view).setDuration(
-                changeDuration
-            )
-            oldViewAnim.translationX((changeInfo.toX - changeInfo.fromX).toFloat())
-            oldViewAnim.translationY((changeInfo.toY - changeInfo.fromY).toFloat())
-            oldViewAnim.alpha(0f).setListener(object : VpaListenerAdapter() {
-                override fun onAnimationStart(view: View) {
-                    dispatchChangeStarting(changeInfo.oldHolder, true)
-                }
-
-                override fun onAnimationEnd(view: View) {
-                    oldViewAnim.setListener(null)
-                    view.alpha = 1f
-                    view.translationX = 0f
-                    view.translationY = 0f
-                    dispatchChangeFinished(changeInfo.oldHolder, true)
-                    changeAnimations.remove(changeInfo.oldHolder!!)
-                    dispatchFinishedWhenDone()
-                }
-            }).start()
-        }
-        if (newView != null) {
-            changeAnimations.add(changeInfo.newHolder!!)
-            val newViewAnimation = ViewCompat.animate(newView)
-            newViewAnimation.translationX(0f).translationY(0f).setDuration(changeDuration).alpha(1f)
-                .setListener(object : VpaListenerAdapter() {
-                    override fun onAnimationStart(view: View) {
-                        dispatchChangeStarting(changeInfo.newHolder, false)
-                    }
-
-                    override fun onAnimationEnd(view: View) {
-                        newViewAnimation.setListener(null)
-                        newView.alpha = 1f
-                        newView.translationX = 0f
-                        newView.translationY = 0f
-                        dispatchChangeFinished(changeInfo.newHolder, false)
-                        changeAnimations.remove(changeInfo.newHolder!!)
-                        dispatchFinishedWhenDone()
-                    }
-                }).start()
-        }
-    }
-
     private class MoveInfo internal constructor(
         var holder: RecyclerView.ViewHolder,
         var fromX: Int,
@@ -552,7 +418,7 @@ class FlexboxItemAnimator : SimpleItemAnimator() {
         var toY: Int
     )
 
-    private class ChangeInfo private constructor(
+    class ChangeInfo private constructor(
         var oldHolder: RecyclerView.ViewHolder?,
         var newHolder: RecyclerView.ViewHolder?
     ) {
@@ -580,10 +446,10 @@ class FlexboxItemAnimator : SimpleItemAnimator() {
         }
     }
 
-    private open class VpaListenerAdapter : ViewPropertyAnimatorListener {
-        override fun onAnimationStart(view: View) {}
-        override fun onAnimationEnd(view: View) {}
-        override fun onAnimationCancel(view: View) {}
-    }
+//    private open class VpaListenerAdapter : ViewPropertyAnimatorListener {
+//        override fun onAnimationStart(view: View) {}
+//        override fun onAnimationEnd(view: View) {}
+//        override fun onAnimationCancel(view: View) {}
+//    }
 
 }
